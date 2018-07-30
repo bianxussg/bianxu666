@@ -1,9 +1,9 @@
 <template>
   <transition name="mylove">
     <div class="all">
-      <div class="cloudPicContainer">
+      <!--<div class="cloudPicContainer">
         <img class="cloudPic" src="./pic/cloud.gif" >
-      </div>
+      </div>-->
       <div class="back-container">
         <span class="back-text" @click="back">返回</span>
       </div>

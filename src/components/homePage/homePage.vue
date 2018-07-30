@@ -29,7 +29,7 @@
             return {}
         },
       mounted(){
-        console.log(1)
+      //  console.log(1)
         this.initFemale()
         this.initMale()
       },
@@ -181,4 +181,14 @@
         &.female:hover
           transition all .5s
           transform translate3d(-10%,-60%,0)
+          animation spin 1s linear infinite
+
+  /*@keyframes spin {
+    from {
+      transform: scale(0.5)
+    }
+    to {
+      transform: scale(1.2);
+    }
+  }*/
 </style>

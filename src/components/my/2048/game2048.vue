@@ -4,7 +4,7 @@
       <h1>2048</h1>
       <span class="start" @click="again()">NEW GAME</span>
       <div class="score">score:{{score}}</div>
-      <p>分别用wsad键盘，控制上下左右</p>
+      <p>分别用wsad，控制上下左右</p>
     </div>
     <div class="cube-game">
       <div class="cube" v-for="itemf in board">
@@ -34,10 +34,10 @@
         color:['#FFFF06','#6DC307','#ffd702','#07ff6e','#066A34'
           ,'#4890B1','#0D3EFF','#7C0BFF','#c203ff','#FF12DC','#FF1627','#FF5F1F'],
         board:[
-          [2,2,8,0],
           [0,0,0,0],
-          [0,0,2,2],
-          [2,4,2,0]
+          [0,0,0,0],
+          [0,0,0,0],
+          [0,0,0,0]
         ],
         loseFlag:false
       }
@@ -56,6 +56,9 @@
         }else if(e.keyCode===65){//left
           _this.left()
         }
+
+
+
         //  Vue.set(this.board)
       })
     },
@@ -76,12 +79,46 @@
     },
     methods:{
       init(){
+
         let cube = this.$refs.cube
         for(let i = 0;i<4;i++){
           for(let j=0;j<4;j++){
             let x = i*4 +j
             cube[x].style.top = `${i*120+20}px`
             cube[x].style.left = `${j*120+20}px`
+          }
+        }
+        this.getRandomBoard(5)
+        setTimeout(()=>{
+          this.getColor()
+        })
+
+      },
+      getRandomBoard(nums){
+        let num = nums || 5
+      //  console.log(num,'num')
+        //let random = num
+        let randomArray =  []
+        for(let i=0;i<num;i++){
+          let randomNum = Math.floor(Math.random()*16)
+          for(let j=0;j<randomArray.length;j++) {
+            if (randomNum === randomArray[j]) {
+              i--
+              randomArray.splice(j, 1)
+            }
+          }
+          randomArray.push(randomNum)
+        }
+        randomArray.sort()
+      //  console.log(randomArray,'randomArray')
+        for(let i = 0;i<=3;i++) {
+          for (let j = 0;j <=3;j++) {
+            for(let k = 0;k<randomArray.length;k++){
+              if(randomArray[k]===i*4+j){
+                this.board[i].splice(j,1,2)
+              }
+            }
+
           }
         }
       },
@@ -98,19 +135,21 @@
           }
         }
       },
+      resetBoard(){
+        for(let i = 0;i<=3;i++) {
+          for (let j = 0;j <=3;j++) {
+            this.board[i].splice(j,1,0)
+          }
+        }
+      },
       lose(){
         this.loseFlag = true
       },
       again(){
         this.loseFlag=false
-        this.board=[
-          [0,0,0,0],
-          [0,0,0,0],
-          [0,0,2,2],
-          [2,4,2,0]
-        ]
-        this.$set(this.board)
-        this.$nextTick(()=>{
+        this.resetBoard()
+        this.getRandomBoard(5)
+        setTimeout(()=>{
           this.getColor()
         })
         this.score = 0
@@ -178,32 +217,10 @@
 
         // this.tempBoard = this.board
         // 是够合并
-        for(let i = 3;i>=0;i--) {
-          for (let j = 3;j >=0;j--) {
-            if(this.board[i][j] !== 0){
-              if(i>0 && this.board[i][j]===this.board[i-1][j]){
-                let temp = this.board[i-1][j]
-                this.board[i-1].splice(j,1,temp * 2)
-                this.board[i].splice(j,1,0)
-                this.addScore(temp * 2)
-              }
-              if(i>1 && this.board[i][j]===this.board[i-2][j] && this.board[i-1][j] ===0){
-                let temp = this.board[i-2][j]
-                this.board[i-2].splice(j,1,temp * 2)
-                this.board[i].splice(j,1,0)
-                this.addScore(temp * 2)
-              }
-              if(i>2 && this.board[i][j]===this.board[i-3][j] && this.board[i-1][j] ===0  && this.board[i-2][j] ===0){
-                let temp = this.board[i-3][j]
-                this.board[i-3].splice(j,1,temp * 2)
-                this.board[i].splice(j,1,0)
-                this.addScore(temp * 2)
-              }
-            }
-          }
-        }
+        this.upMerge()
 
-        //是否向上移动
+
+        // 无合并  向上移动
         //this.$set(this.board)
         for(let i = 3;i>=0;i--) {
           for (let j = 3;j >=0;j--) {
@@ -233,32 +250,42 @@
 
 
       },
-      down(){
-        //是否合并
+      upMerge(){
+        let flag = false
         for(let i = 0;i<=3;i++) {
           for (let j = 0;j<=3;j++) {
             if(this.board[i][j] !== 0){
-              if(i <3 && this.board[i][j]===this.board[i+1][j]){
+              if(i<1 && this.board[i][j]===this.board[i+3][j] && this.board[i+1][j]===0 && this.board[i+2][j]===0){
                 let temp = this.board[i][j]
-                this.board[i+1].splice(j,1,temp*2)
+                this.board[i+3].splice(j,1,temp*2)
                 this.board[i].splice(j,1,0)
                 this.addScore(temp * 2)
+                flag = true
               }
               if(i<2 && this.board[i][j]===this.board[i+2][j] && this.board[i+1][j]===0){
                 let temp = this.board[i][j]
                 this.board[i+2].splice(j,1,temp*2)
                 this.board[i].splice(j,1,0)
                 this.addScore(temp * 2)
+                flag = true
               }
-              if(i<1 && this.board[i][j]===this.board[i+3][j] && this.board[i+1][j]===0 && this.board[i+2][j]===0){
+              if(i <3 && this.board[i][j]===this.board[i+1][j]){
                 let temp = this.board[i][j]
-                this.board[i+3].splice(j,1,temp*2)
+                this.board[i+1].splice(j,1,temp*2)
                 this.board[i].splice(j,1,0)
                 this.addScore(temp * 2)
+                flag = true
               }
             }
           }
         }
+        if(flag){  //如果发生了合并，再从上往下遍历一次
+          this.upMerge()
+        }
+      },
+      down(){
+        //是否合并
+       this.downMerge()
         //是否向下移动
         for(let i = 0;i<=3;i++) {
           for (let j = 0;j <=3;j++) {
@@ -286,9 +313,42 @@
           this.getColor()
         })
       },
+      downMerge(){
+        let flag = false
+        for(let i = 3;i>=0;i--) {
+          for (let j = 3;j >=0;j--) {
+            if(this.board[i][j] !== 0){
+              if(i>2 && this.board[i][j]===this.board[i-3][j] && this.board[i-1][j] ===0  && this.board[i-2][j] ===0){
+                let temp = this.board[i-3][j]
+                this.board[i-3].splice(j,1,temp * 2)
+                this.board[i].splice(j,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+              if(i>1 && this.board[i][j]===this.board[i-2][j] && this.board[i-1][j] ===0){
+                let temp = this.board[i-2][j]
+                this.board[i-2].splice(j,1,temp * 2)
+                this.board[i].splice(j,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+              if(i>0 && this.board[i][j]===this.board[i-1][j]){
+                let temp = this.board[i-1][j]
+                this.board[i-1].splice(j,1,temp * 2)
+                this.board[i].splice(j,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+            }
+          }
+        }
+        if(flag){
+          this.downMerge()
+        }
+      },
       right(){
         //是否合并
-        for(let i = 0;i<=3;i++) {
+       /* for(let i = 0;i<=3;i++) {
           for (let j = 0;j <=3;j++) {
             if(this.board[i][j] !== 0){
               if(j <3 && this.board[i][j]===this.board[i][j+1]){
@@ -311,7 +371,8 @@
               }
             }
           }
-        }
+        }*/
+       this.rightMerge()
         //是否向右移动
         for(let i = 0;i<=3;i++) {
           for (let j = 0;j <=3;j++) {
@@ -339,9 +400,43 @@
           this.getColor()
         })
       },
+      rightMerge(){
+        let flag = false
+        for(let i = 3;i>=0;i--) {
+          for (let j = 3;j>=0;j--) {
+            if(this.board[i][j] !== 0){
+              if(j <3 && this.board[i][j]===this.board[i][j+1]){
+                let temp = this.board[i][j]
+                this.board[i].splice(j,1,temp*2)
+                this.board[i].splice(j+1,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+              if(j<2 && this.board[i][j]===this.board[i][j+2] && this.board[i][j+1]===0){
+                let temp = this.board[i][j]
+                this.board[i].splice(j,1,temp*2)
+                this.board[i].splice(j+2,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+              if(j<1 && this.board[i][j]===this.board[i][j+3] && this.board[i][j+1]===0 && this.board[i][j+2]===0){
+                let temp = this.board[i][j]
+                this.board[i].splice(j,1,temp*2)
+                this.board[i].splice(j+3,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+            }
+          }
+        }
+        if(flag){
+          this.rightMerge()
+        }
+      },
       left(){
         //是否合并
-        for(let i = 3;i>=0;i--) {
+        this.leftMerge()
+      /*  for(let i = 3;i>=0;i--) {
           for (let j = 3;j>=0;j--) {
             if(this.board[i][j] !== 0){
               if(j <3 && this.board[i][j]===this.board[i][j+1]){
@@ -364,7 +459,7 @@
               }
             }
           }
-        }
+        }*/
         //是否向左移动
         for(let i = 3;i>=0;i--) {
           for (let j = 3;j>=0;j--) {
@@ -391,6 +486,39 @@
         this.$nextTick(()=>{
           this.getColor()
         })
+      },
+      leftMerge(){
+        let flag = false
+        for(let i = 0;i<=3;i++) {
+          for (let j = 0;j <=3;j++) {
+            if(this.board[i][j] !== 0){
+              if(j <3 && this.board[i][j]===this.board[i][j+1]){
+                let temp = this.board[i][j]
+                this.board[i].splice(j+1,1,temp*2)
+                this.board[i].splice(j,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+              if(j<2 && this.board[i][j]===this.board[i][j+2] && this.board[i][j+1]===0){
+                let temp = this.board[i][j]
+                this.board[i].splice(j+2,1,temp*2)
+                this.board[i].splice(j,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+              if(j<1 && this.board[i][j]===this.board[i][j+3] && this.board[i][j+1]===0 && this.board[i][j+2]===0){
+                let temp = this.board[i][j]
+                this.board[i].splice(j+3,1,temp*2)
+                this.board[i].splice(j,1,0)
+                this.addScore(temp * 2)
+                flag = true
+              }
+            }
+          }
+        }
+        if(flag){
+          this.leftMerge()
+        }
       }
     }
   }
@@ -433,6 +561,7 @@
           text-align center
           font-size 30px
           font-weight 700
+          transition all .5s
     /* &.cube-enter-active, &.cube-leave-active
        transition all 0.2s*/
     .layer
